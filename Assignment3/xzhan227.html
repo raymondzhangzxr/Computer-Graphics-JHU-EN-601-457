@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EN.601.657 Computer Graphics Assignment 3</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <h2 align="center">EN.601.657 Computer Graphics Assignment 3</h2>
+    <h3 align="center">Xiaorui Zhang (xzhan227@jh.edu)</h3>
+    <hr />
+    <h2>General Information</h2>
+    <ul>
+        <li><b>Name</b>: Xiaorui Zhang</li>
+        <li><b>JHED ID</b>: xzhan227</li>
+        <li><b>Envitonment</b>: macOS Ventura (M1)</li>
+        <li><b>Number of late days used</b>: 0</li>
+    </ul>
+    <hr />
+    <h2>Modification outside the todo.cpps</h2>
+    In order to support the my implementation, I make some modification of the codebase: 
+    <ul>
+        <li><b>Ray/sphere.h</b>
+            <ul>
+                <li>Added a public variable <code>glVertices</code> to store all the vertices of the sphere. I also added a method <code>drawVertex</code> to draw a single vertex through openGL.</li>
+            </ul>
+        <li><b>Ray/box.h</b>
+            <ul>
+                <li>Added a public variable to save normals to each face on the box. </li>
+                <li>Added a public variable to save the vertex index on each face of the box.</li>
+                <li>Added a pulic variable to save the relative position of each vertices.</li>
+            </ul>
+        <li><b>Ray/cylinder.h</b></li>
+        <ul>
+            <li>Added public variables to store the vertices on the top and bottom faces.</li>
+            <li>Added public variables to store the top and bottom faces' location and normals. </li>
+        </ul>
+        <li><b>Ray/cone.h</b></li>
+        <ul>
+            <li>Added public variables to store the vertices on the bottom faces.</li>
+            <li>Added public variables to store the top and bottom center of the cone. </li>
+        </ul>
+        <li><b>Ray/torus.h</b></li>
+        <ul>
+            <li>Added a public variable to store all the vertices of the torus.</li>
+        </ul>
+    </ul>
+
+    <hr />
+    <h2>Implemented Features</h2>
+    <h3>Ray Casting</h3>
+    <ul>
+        <li><b><code>Ray::Camera::drawOpenGL</code></b>:
+            <p>This method calls the OpenGL commands for setting up the camera.
+            </p>
+        </li>
+
+        <br>
+        <li><b><code>Ray::ShapeList::drawOpenGL</code></b>:
+            <p>This method calls the necessary OpenGL commands to render the primitive.
+            </p>
+        </li>
+        <br>
+        <li><b><code>Ray::TriangleList::drawOpenGL & Ray::Triangle::drawOpenGL</code></b>:
+            <p>Loop through the triangles and call the drawOpenGL method of each triangle. For each triangle, we just draw each vertex in counter clockwise order.
+            </p>
+        </li>
+        <br>
+        <li><b><code>Ray::Sphere::drawOpenGL</code></b>:
+            <p>To draw a shere we need to tessellate the sphere into triangles and quads and draw them using the OpenGL commands. <center><IMG SRC="xzhan227_HTML/pics/sphere.png" width=400></center> Image Credit: <a
+href="http://www.songho.ca/opengl/gl_sphere.html">opengl/gl_sphere</a>. Implementation inspired by: <a href="https://danielsieger.com/blog/2021/03/27/generating-spheres.html">danielsieger</a>. <br>
+            </p>
+        </li> 
+        <br>
+        <li><b><code>Ray::Material::drawOpenGL</code></b>:
+            <p>This method calls the necessary OpenGL commands to set up the material including the emissive, ambient, diffuse, specular, and shininess. We also set up the texture if the material has a texture, make the material transparent if the material has transparency. Implementation inspired by: <a href="https://math.hws.edu/graphicsbook/c4/s2.html">graphicsbook</a>
+            </p>
+        </li>
+        <br>
+        <li><b><code>Ray::DirectionalLight::drawOpenGL & Ray::PointLight::drawOpenGL & Ray::SpotLight::drawOpenGL</code></b>:
+            <p>
+                This method calls the necessary OpenGL commands to set up the light source. I used <code>glLightfv</code> to set up position, diffuse, specular, and ambient light. I also used <code>glLightf</code> to set up attenuation, spot cutoff, and spot exponent. 
+            </p>
+        </li>
+        <br>
+        <li><b><code>Ray::AffineShape::drawOpenGL</code></b>:
+            <p> This method takes into account the local transfomation by pushing the appropriate matrix onto the stack prior to rendering and then popping it off after the use.
+            </p>
+        </li>
+        <br>
+        <li><b><code>Triangle Texture Mapping</code></b>:
+            <ul>
+                <li><b><code>Ray::Material::drawOpenGL()</code></b>:
+                    This method is updated so that when a texture is present <code>GL_TEXTURE_2D</code> will be enabled.
+                </li>
+                <li><b><code>Ray::Texture::initOpenGL()</code></b>:
+                    In this method we generate the texture and bind the texture to the handler. I also used MIPmap to make the texture more
+                    smooth and reduce the aliasing effect.
+                </li>
+            </ul>
+            The visualization of the test.ray (tessellation complexity = 100 ) are shown below:
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/test.dir.png" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/test.point.png" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/test.spot.png" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light</TD>
+                                <TD ALIGN="CENTER"><CODE>Point Light</TD>
+                                <TD ALIGN="CENTER"><CODE>Spot Light</TD>
+                            </TR>
+                        </TABLE>
+            
+        </li>
+        <br>
+        <li><b><code>Ray::Box::drawOpenGL</code></b>:
+            <p>This method calls the necessary OpenGL commands to render the box. A box can be represented by 6 quads, so I used <code>glBegin(GL_QUADS)</code> to draw the box. The visualization of the test_box.ray that I prepared (tessellation complexity = 100 ) is shown below, you can run the following command to generate the image: <code>./Assignment3 --in xzhan227_HTML/rays/test.box.ray --width 640 --height 480 --cplx 100</code><br>
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/test.box.png" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light</TD>
+                                            
+                </TR>
+            </TABLE>
+        </li>
+        
+        
+        <br>
+        <li><b><code>Ray::Cylinder::drawOpenGL</code></b>:
+            <p>This method calls the necessary OpenGL commands to render the cylinder. A cylinder can be divided into 3 pieces: top and bottom faces and the side face. I chose to render the top and bottom faces by triangles, which top vertex located at the top/bottom face center. The side face is then rendered by quads. The visualization of the test_cylinder.ray that I prepared (tessellation complexity = 100 ) is shown below, you can run the following command to generate the image: <code>./Assignment3 --in xzhan227_HTML/rays/test.cylinder.ray --width 640 --height 480 --cplx 100</code><br>
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/test.cylinder.png" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light</TD>
+                                                    
+                        </TR>
+                    </TABLE>
+                </li>
+        <br>
+        <li><b><code>Ray::Cone::drawOpenGL</code></b>:
+            <p>This method calls the necessary OpenGL commands to render the cone. A cone can be rendered by triangles, which top
+                vertex located at the top of the cone. Noted, the normal of each triangle is different and were defined in the <code>initOpenGL</code> function. The visualization of the
+                test_cone.ray that I prepared (tessellation complexity = 100 ) is shown below, you can run the following
+                command to generate the image:
+                <code>./Assignment3 --in xzhan227_HTML/rays/test.cone.ray --width 640 --height 480 --cplx 100</code><br>
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/test.cone.png" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light</TD>
+                                                            
+                                </TR>
+                            </TABLE>
+                        </li>
+                <br>
+            <li><b><code>Ray::Torus::drawOpenGL</code></b>:
+                <p>This method calls the necessary OpenGL commands to render the torus. The torus geometry is generated by spanning a circle along a circular path. <a href="https://electronut.in/torus/">Geometry Illustration.</a> The visualization of the test_torus.ray that I prepared (tessellation complexity = 100 ) is shown below, you can run the following
+                    command to generate the image:
+                    <code>./Assignment3 --in xzhan227_HTML/rays/test.torus.ray --width 640 --height 480 --cplx 100</code><br>
+                </p>
+                <TABLE BORDER=1>
+                    <TR>
+                        <TD><IMG SRC="xzhan227_HTML/pics/test.torus.png" width=300></TD>
+                    </TR>
+                    <TR>
+                        <TD ALIGN="CENTER"><CODE>Directional Light</TD>
+                                                                        
+                    </TR>
+                </TABLE>
+            </li>
+        <br>
+
+        <li><b><code>Moving the camera</code></b>:
+            <ul>
+                <li><b><code>Ray::Camera::moveForward, moveRight, moveUp:</code></b> <br>
+                This method moves the camer position by the given amount in the given direction. Then the gluLookAt is called to update the ModelView matrix stack. 
+                <br><br>
+                </li>
+                <li><b><code>Ray::Camera::rotateUp, rotateRight</code></b>:
+                This method rotates the camera by the given amount in the given direction. Then the gluLookAt is called to update the ModelView matrix stack. To achieve this, I used the <a href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula/">Rodrigues' rotation formula</a>.
+                </li>
+            </ul>
+            <br>
+            
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/rot1.png" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/rot2.png" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/rot3.png" width=300></TD> 
+                    <TD><IMG SRC="xzhan227_HTML/pics/rot4.png" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Torus</TD>
+                    <TD ALIGN="CENTER"><CODE>Cone</TD>
+                    <TD ALIGN="CENTER"><CODE>Cyliner</TD>
+                    <TD ALIGN="CENTER"><CODE>Box</TD>
+                </TR>
+            </TABLE>
+                    
+         </li>
+        
+        <br>
+        <li><b><code>Room Rendering</code></b>:
+            <p>I created a Ray file containing the following elements</p>
+            <ul>
+                <li>Four walls, a floor and ceiling.</li>
+                <li>A table, 3 chairs.</li>
+                <li>Transparent table top.</li>
+                <li>Three texture mapped surfaces: Wall, Floor, Ceilling.</li>
+                <li>Five point lights.</li>
+            </ul>
+            <p>PS: To render the transparent table, please uncomment the transparent rendering part in <code>Material::drawOpenGL</code> in <code>scene.to.do.cpp</code>.</p>
+        
+        
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/room1.png" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/room2.png" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/room3.png" width=300></TD>
+                    </TR>
+                    </TABLE>
+                            
+        </li>
+        <br>
+        <li><b><code>Art Conetest</code></b>:
+            <br><br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/art.png" width=300></TD>
+                    
+                </TR>
+            </TABLE>
+        
+        </li>
+        
+</ul>
+    <hr>
+    <h3>Not Implemented:</h3>
+    <ul>
+        <li>A Luxo Jr. style lamp</li>
+        <li>A mirror</li>
+        <li>Shadows on at least one surface
+        </li>
+        <li>An object that responds to user mouse clicks
+        </li>
+        <li>Support efficient rendering using vertex buffer objects (vertex buffer)
+        </li>
+        <li>OpenGL Shading Language</li>
+        <li>Implement procedural texture mapping with Perlin noise functions to create 3-D solid wood, marble, etc</li>
+        <li>Anti-Aliasing</li>
+    </ul>
+
+</body>
+
+</html>

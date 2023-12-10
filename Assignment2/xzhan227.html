@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EN.601.657 Computer Graphics Assignment 2</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <h2 align="center">EN.601.657 Computer Graphics Assignment 2</h2>
+    <h3 align="center">Xiaorui Zhang (xzhan227_HTML@jh.edu)</h3>
+    <hr />
+    <h2>General Information</h2>
+    <ul>
+        <li><b>Name</b>: Xiaorui Zhang</li>
+        <li><b>JHED ID</b>: xzhan227_HTML</li>
+        <li><b>Envitonment</b>: macOS Ventura (M1)</li>
+        <li><b>Number of late days used</b>: 0</li>
+    </ul>
+    <hr />
+    <h2>Modification outside the todo.cpps</h2>
+    In order to support the my implementation, I make some modification of the codebase: 
+    <ul>
+        <li><b>Ray/sphere.h</b>
+            <ul>
+                <li>Added a public variable for the implicit polynomial of the sphere</li>
+            </ul>
+        <li><b>Ray/triangle.h</b></li>
+        <ul>
+            <li>Added a public variable for the plane of the triangle </li>
+            <li>Added a public variable for the implicit polynomial of the triangle plane</li>
+            <li>Added a pulic variable for the signed area of the triangle</li>
+            <li> Added a public method to calculate the signed area given three points</li>
+        </ul>
+        <li><b>Ray/shapeList.h</b></li>
+        <ul>
+            <li>Added a public variable: a vector to hold shapeBBHits for each thread.
+            std::vector< std::vector< ShapeBoundingBoxHit>>  threadShapeBBHits;  </li>
+        </ul>
+        </li>
+    </ul>
+
+    <hr />
+    <h2>Implemented Features</h2>
+    <h3>Ray Casting</h3>
+    <ul>
+        <li><b><code>Ray::Camera::getRay()</code></b>:
+            <p>This function returns the ray that leaves the camera and goes through pixel (i,j) of the view plane.
+            </p>
+        </li>
+
+        <br>
+        <li><b><code>Ray::ShapeList::processFirstIntersection()</code></b>:
+            <p>This method processes the first shape which intersect the ray within the prescribed range and passing the rFilter test,
+            invoking the rKernel kernel with the intersection information. The function returns true if there was an intersection.<br> For the naive brute force implementation, I simply looped through all the shapes in the list and utilized a local kernel to check if the
+                new intersection is closer to the camera by comparing
+                the new intersection with a stored minial intersection. If so, the intersection information will be updated.
+                After looping through ShapeList, the stored minimal intersection will be used to trigger the <code>rKernel</code> if the intersection is within the range.
+            </p>
+        </li>
+        <br>
+        <li><b><code>Ray::Sphere::processFirstInersection()</code></b>:
+            <p>This method processes the first shape which intersect the ray within the prescribed range and passing the rFilter test,
+            invoking the rKernel kernel with the intersection information. The function returns true if there was an intersection.<br>
+            To implement this, I used the implicit polynomial of the sphere to solve the intersection roots. The first positive root is the first intersection point, then the intersection info is setup and the kernel is called.  
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/sphere.bmp" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Using white for the GetColor Function</TD>          
+                </TR>
+            </TABLE>
+        </li>
+        <br>
+        <li><b><code>Ray::Triangle::processFirstIntersection()</code></b>:
+            <p>This method processes the first shape which intersect the ray within the prescribed range and passing the rFilter test,
+            invoking the rKernel kernel with the intersection information. The function returns true if there was an intersection.<br>
+            To implement this, I first find the intersection point with the plane of the triangle, then I check if the intersection point is within the triangle by checking the barycentric coordinate. If the intersection point is within the triangle, then the intersection info is setup and the kernel is called. The normal of the intersection, is a linear combination of the normal of the vertices.
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/triangle.bmp" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Using white for the GetColor Function</TD>          
+                            </TR>
+            </TABLE>
+        </li>
+        <br>
+        <li><b><code>Ray::XLight::getAmbient(), getDiffuse(), getSpecular()</code></b>:
+            <p>To obtain the ambient, diffuse, and specular color contributions of the lights at the point of intersection.
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/ambient.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/diffuse.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/specular.bmp" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Emissive and ambient Lighting Effect</TD>
+                    <TD ALIGN="CENTER"><CODE>Diffusion Lighting Effect</TD>
+                    <TD ALIGN="CENTER"><CODE>Specular Lighting Effect</TD>
+                </TR>
+            </TABLE>
+        </li>
+        <br>
+        <li><b><code>Ray::StaticAffineShape::init()</code></b>:
+            <p>
+                Initialize the local-to-global position transform <code>Ray::StaticAffineShape::_inverseTransform</code> and the local-to-global
+                normal transform <code>Ray::StaticAffineShape::_normalTransform</code>.
+                <br>
+                <center>\(M = \text{Local to Global}\)</center>
+                <center>\(M^{-1} = \text{Global to Local}\)</>
+                </center>
+                <center>\(M_{\text{normal}} = (M_{L}^{T})^{-1}\)</>
+                </center>
+                <br>
+            </p>
+        </li>
+        <br>
+        <li><b><code>Ray::XLight:isInShadow()</code></b>:
+            <p> To determine if the point of intersection is in shadow from a particular light source, I created a Ray from
+                the intersection point to the light source. Then I check if the ray hit anything before reaching the light by utilizing a 
+                 local kernel. To avoid the construced ray hitting
+                itself, I advanced the ray location by <code>Epsilon</code> in
+                the light's direction.
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/isShadowD.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/isShadowP.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/isShadowS.bmp" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light Source</TD>
+                    <TD ALIGN="CENTER"><CODE>Point Light Source</TD>
+                    <TD ALIGN="CENTER"><CODE>Spot Light Source</TD>
+                </TR>
+            </TABLE>
+        </li>
+        <br>
+        <li><b><code>Ray::Scene::getColor()</code></b>:
+            <p>To take all the light source into account, we will loop
+                through all the light source within <code>Scene</code>.
+                To transform the intersection Information from local
+                coordinate to the global coordinate, we will multiply
+                the information with the corresponding transformation
+                matrix which is stored in <code>spInfo</code>.
+            </p>
+        </li>
+        <br>
+        <li><b><code>Ray::Sphere::processAllIntersections()</code></b>:
+            <p>This method processes all shapes which intersect the ray within the prescribed range and passing the rFilter test,
+            invoking the rKernel kernel with the intersection information. The processing terminates early if the kernel returns
+            false. The function returns the number of valid intersections.
+            </p>
+        </li>
+        
+        
+        <br>
+        <li><b><code>Ray::Scene::getColor() with Scene::Reflect, Scene::Refract & RayLight::transparency </code></b>:
+            <p>To incorprate the reflection and refraction into our get color function, we need to cast the reflected and refracted rays so that we can find the corresponding color. The mathematic dereivation of finding the reflected and refracted ray is shown below: <center><IMG SRC="xzhan227_HTML/pics/rr_math.jpeg" width=1000></center><br>
+            <b>Reflection</b>:<br><br>
+            In the getColor() function, reflection color is only considered when the ray is coming from the outside of the shape. 
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/reflectD.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/reflectP.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/reflectS.bmp" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light Reflection</TD>
+                    <TD ALIGN="CENTER"><CODE>Point Light Reflection</TD>
+                    <TD ALIGN="CENTER"><CODE>Spot Light Reflection</TD>
+                </TR>
+            </TABLE>
+            <br><b>Transparency</b>:<br><br>
+            <p>To implement the transparency and partial shadows, we need to accumulate the transparency along the ray from intersection to the light source. Thus, we need to cast a ray from intersection to a certain length based on the light source. Once the ray hit something along the path, the intersection transparency will be accumulated by multiplication. The the specular and diffusion will be modulated by the transparency. I then modified the getColor() function to recursively cast rays in the transparent direction.</p>
+            <b><code>Ray::SphereLight::transparency</code></b>:
+            <p>
+            To support the transparency calculation of the sphere light, we need to cast send rays to (uniformly) random positions distributed over the surface of the sphere (with the random number given by the parameter samples) and computing the average transparency over the different rays.</p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/transD.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/transP.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/transS.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/transSphere2.bmp" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light Transparency</TD>
+                    <TD ALIGN="CENTER"><CODE>Point Light Transparency</TD>
+                    <TD ALIGN="CENTER"><CODE>Spot Light Transparency</TD>
+                    <TD ALIGN="CENTER"><CODE>Sphere Light Transparency</TD>
+                </TR>
+            </TABLE> 
+            <br><b>Refraction</b>:<br><br>
+            <p>Instead of naively cast a ray recursively in transparent direction without any refraction. <code>Scene::Refract</code> is implemented to get the correct refraction direction. Varible K (as in above formula graph) is used to determine if a refraction ray should be generated, if K < 0 then the ray reflects off the surface and does not pass through.</p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/refractD.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/refractP.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/refractS.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/refractSphere.bmp" width=300></TD>
+                </TR>
+                <TR>
+                <TD ALIGN="CENTER"><CODE>Directional Light Refraction</TD>
+                <TD ALIGN="CENTER"><CODE>Point Light Refraction</TD>
+                <TD ALIGN="CENTER"><CODE>Spot Light Refraction</TD>
+                <TD ALIGN="CENTER"><CODE>Sphere Light Refraction</TD>
+                </TR>
+            </TABLE>
+        </li>
+        
+
+        <br>
+        <li><b><code>Ray::Triangle::processFirstIntersection & Ray::Scene::getColor() with texture mapping </code></b>:
+            <p>To add texture to the color, we first need to modify
+                <code>Ray::Triangle::processFirstIntersection</code> to compute the correct texture coordinate. This is very similar to the normal computation, we use the barycentric coordinates of the triangle to calculate the averaged texture coordinate. Once we have the texture coordinate, a bilinear sampling is used to sample the pixel from the texture image and to modulate the contribution of the emissive, ambient, diffuse, and specular terms. 
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/textureD.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/textureP.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/textureS.bmp" width=300></TD>
+                    <TD><IMG SRC="xzhan227_HTML/pics/textureSphere.bmp" width=300></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Directional Light with Texture</TD>
+                    <TD ALIGN="CENTER"><CODE>Point Light with Texture</TD>
+                    <TD ALIGN="CENTER"><CODE>Spot Light with Texture</TD>
+                    <TD ALIGN="CENTER"><CODE>Sphere Light with Texture</TD>
+                </TR>
+            </TABLE>
+        </li>
+    </ul>
+    <hr />
+    <h3>Accelerated Ray-Tracing</h3>
+    <ul>
+        <li><b><code>Ray::Shape::updateBoundingBox()</code></b>:
+            <ul>
+                <li><code>Ray::Sphere::updateBoundingBox()</code>:
+                    <p>
+                        To compute the boundingBox of the sphere, I found the corner by by adding/subtracting
+                        <code>Point3d(radius, radius, radius)</code> from the center. 
+                    </p>
+                </li>
+                <li><code>Ray::Triangle::updateBoundingBox()</code>:
+                    <p>
+                        To compute the boundingBox of the triangle, I found the corners by computing the maximum and minimum of the coordinate for each dimension. Moreover, I also added a small epsilon to the maximum and subtracted a small epsilon from the minimum for robustness.
+                    </p>
+                </li>
+                <li><code>Ray::AffineShape::updateBoundingBox()</code>:
+                    <p>
+                        To compute the boundingBox of the AffineShape, we need to
+                        apply the local-to-global transformation to corner and
+                        axis-aligned the bounding box. 
+                        
+                    </p>
+                </li>
+                <li><code>Ray::ShapeList::updateBoundingBox()</code>:
+                    <p>
+                        The bounding box of the ShapeList is the union of the bounding box of all the shapes within the list.
+                    </p>
+                </li>
+            </ul>
+        </li>
+        <li><b><code>Util::BoundingBox::intersect()</code></b>:
+            <p>The BoundingBox intersect is implemented using the idea from <a
+                    href="https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection">Scratchapixel</a>. To make this method work for arbitrary dimension, we need to loop through all the dimension and check if the ray hit the bounding box in each dimension. If the ray hit the bounding box in all the dimension, then the ray hit the bounding box, and the most constrained bounding box is returned. 
+            </p>
+        </li>
+        <li><b><code>Ray::ShapeList::processFirstIntersection</code></b>:
+            <p> I first computed the intersection with the Util::BoundingBoxs of the Ray::Shapes in Ray::ShapeList::shapes, if there is no hit with all the bounding boxs, we can terminate the search. Then I sort the
+            shapes based on the proximity of the start of their Util::BoundingBox intersection, and finally intersects the Ray::Shapes in order, allowing for early termination when the current minimal hit is already smaller then the hit on the Bounding-box. 
+            </p>
+        </li>
+        <li><b><code>Ray::ShapeList::processAllIntersections</code></b>:
+            <p> I first test if range overlaps the bounding boxes and only propagate the traversal to those Ray::Shapes whose bounding box overlaps range non-trivially to speed up.
+            </p>
+        </li>
+        <li><b>Ray::Scene::rayTrace Multi-threading</b>:
+            <p> Rather than declaring the <code>std::vector< ShapeBoundingBoxHit></code> every time Ray::ShapeList::processFirstIntersection and
+            Ray::ShapeList::processAllIntersections are called, I added a vector of vectors <code>std::vector< std::vector< ShapeBoundingBoxHit>> threadShapeBBHits;</code> as a member of
+            Ray::ShapeList. When using <code>ThreadPool::Parallel_for(0,(size_t)(width*height), RayTraceFunction )</code> to prallize the ray tracing. I resized this vector <code>std::vector< std::vector<ShapeBoundingBoxHit>></code> as the same size as the number of threads. Then I passed the corresponding vector to each thread using the thread ID, and resized the vector to the size of the shapes. 
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/dog.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: 0.0161872 seconds <br>
+                                Ray-traced: 5.75148 seconds <br>
+                                Pixels: 1600 x 1200 <br>
+                                Primitives: 3222 <br>
+                                Rays: 3,267,752 (1.70195 rays/pixel) <br>
+                                Primitive intersections: 1,667,732 (0.510361 intersections/ray) <br>
+                                Bounding-box intersections: 54,059,728 (16.5434 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+            <br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/bunny.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: 0.773311 seconds<BR>
+                                Ray-traced: 5.53758 seconds<BR>
+                                Pixels: 1600 x 1200<BR>
+                                Primitives: 208,578<BR>
+                                Rays: 2,754,879 (1.43483 rays/pixel)<BR>
+                                Primitive intersections: 960,092 (0.348506 intersections/ray) <br>
+                                Bounding-box intersections: 68,131,717 (24.7313 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+            <br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/dragon.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: 1.88726 seconds <br>
+                                Ray-traced: 5.31554 seconds <br>
+                                Pixels: 1600 x 1200 <br>
+                                Primitives: 500,002 <br>
+                                Rays: 2,944,189 (1.53343 rays/pixel) <br>
+                                Primitive intersections: 1,205,003 (0.409282 intersections/ray) <br>
+                                Bounding-box intersections: 62,109,052 (21.0955 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+            <br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/buddha.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: 3.21409 seconds <br>
+                                Ray-traced: 7.83522 seconds <br>
+                                Pixels: 1600 x 1200 <br>
+                                Primitives: 868,330 <br>
+                                Rays: 3,104,714 (1.61704 rays/pixel) <br>
+                                Primitive intersections: 1,487,191 (0.479011 intersections/ray) <br>
+                                Bounding-box intersections: 96,527,317 (31.0906 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+            <br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/gargoyle.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: 6.72529 seconds <br>
+                                Ray-traced: 11.4875 seconds <br>
+                                Pixels: 1600 x 1200 <br>
+                                Primitives: 1,744,876 <br>
+                                Rays: 2,980,934 (1.55257 rays/pixel) <br>
+                                Primitive intersections: 1,496,580 (0.502051 intersections/ray) <br>
+                                Bounding-box intersections: 142,273,358 (47.7278 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+            <br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/nefertiti.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: 8.30948 seconds <br>
+                                Ray-traced: 8.0512 seconds <br>
+                                Pixels: 1600 x 1200 <br>
+                                Primitives: 2,018,234 <br>
+                                Rays: 3,051,354 (1.58925 rays/pixel) <br>
+                                Primitive intersections: 1,314,375 (0.430751 intersections/ray) <br>
+                                Bounding-box intersections: 85,559,439 (28.0398 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+            <br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/david.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: 20.1245 seconds <br>
+                                Ray-traced: 15.4046 seconds <br>
+                                Pixels: 1600 x 1200 <br>
+                                Primitives: 5,269,880 <br>
+                                Rays: 3,157,665 (1.64462 rays/pixel) <br>
+                                Primitive intersections: 1,772,566 (0.561353 intersections/ray) <br>
+                                Bounding-box intersections: 171,323,818 (54.2565 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+            <br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TH>
+                        <IMG width=300 src="xzhan227_HTML/pics/soft.david.bmp">
+                    <TH ALIGN="LEFT">
+                        <BLOCKQUOTE>
+                            <VERBATIM>
+                                Read: Read: 22.2225 seconds <br>
+                                Ray-traced: 702.572 seconds <br>
+                                Pixels: 1600 x 1200 <br>
+                                Primitives: 5,269,880 <br>
+                                Rays: 3,157,665 (1.64462 rays/pixel) <br>
+                                Primitive intersections: 49,101,140 (15.5498 intersections/ray) <br>
+                                Bounding-box intersections: 9,790,221,478 (3100.46 intersections/ray)
+                            </VERBATIM>
+                        </BLOCKQUOTE>
+                </TR>
+            </TABLE>
+        </li>
+        <br>
+        <li><b>A 3D scene that has both spheres and triangles, should have all three types of light sources in it</b>:
+            <p>
+                I created a <code>threelight.ray</code>. To generate the
+                image please run following command:
+
+                <br><code>./Assignment2 --in xzhan227_HTMLxzhan227_HTML/ray/threelight.ray --out xzhan227_HTMLxzhan227_HTML/Outputs/threelight.bmp --width 640 --height 480 --rLimit 5 --cutOff 0.0001</code></p>
+
+                <center><IMG width=600 src="xzhan227_HTML/pics/threelights.bmp"></center>
+                <p>In this ray file, I used three light sources: directional, point, and spot. I also incoparated the _square.ray which contains the triangles, and the _sphere.ray which contains the spheres. For the transparent part, I modified the _sphere.ray to make a _sphere_transparent.ray file for a transparent sphere. </p>
+
+        </li>
+        <br>
+        <li><b>Art contest</b>:
+            <p>Please run
+            <code>./Assignment2 --in xzhan227_HTMLxzhan227_HTML/ray/art.ray --out xzhan227_HTMLxzhan227_HTML/Outputs/art.bmp --width 640 --height 480 --rLimit 5 --cutOff 0.0001</code></p>
+            <center><IMG width=600 src="xzhan227_HTML/pics/art.bmp"></center>
+
+        </li>
+    </ul>
+    <hr>
+    <h3>Not implement</h3>
+    <ul>
+        <li>Jittered supersampling</li>
+        <li><code>Ray::Box::processFirstIntersection, Ray::Box::processAllIntersections, and Ray::Box::updateBoundingBox </code>
+        </li>
+        <li><code> Ray::Cylinder::processFirstIntersection, Ray::Cylinder::processAllIntersections, and Ray::Cylinder::updateBoundingBox</code>
+        </li>
+        <li><code>Ray::Cone::processFirstIntersection, Ray::Cone::processAllIntersections, and Ray::Cone::updateBoundingBox </code>
+        </li>
+        <li><code>Ray::Torus::processFirstIntersection, Ray::Torus::processAllIntersections, and Ray::Torus::updateBoundingBox</code>
+        </li>
+        <li><b>Constructive solid geometry</b></li>
+        <li>Implement procedural texture mapping with Perlin noise functions to create 3-D solid wood, marble, etc</li>
+        <li><b>bump mapping</b></li>
+        <li><b>real camera lens</b></li>
+        <li><b>Accelerate ray intersections</b> with an octree or BSP spatial data structure.</li>
+    </ul>
+
+</body>
+
+</html>

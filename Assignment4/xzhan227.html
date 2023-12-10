@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EN.601.657 Computer Graphics Assignment 4</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <h2 align="center">EN.601.657 Computer Graphics Assignment 4</h2>
+    <h3 align="center">Xiaorui Zhang (xzhan227@jh.edu)</h3>
+    <hr />
+    <h2>General Information</h2>
+    <ul>
+        <li><b>Name</b>: Xiaorui Zhang</li>
+        <li><b>JHED ID</b>: xzhan227</li>
+        <li><b>Envitonment</b>: macOS Ventura (M1)</li>
+        <li><b>Number of late days used</b>: 1</li>
+    </ul>
+    <hr />
+    
+    <h2>Implemented Features</h2>
+    
+    <ul>
+        <h3>Interpolation::Sample</h3>
+        <li><b><code>Linear Interpolation</code></b>:
+            <p>The linear Interpolation can be done according to formula: 
+            <center><IMG SRC="xzhan227_HTML/pics/linear.png" width=200></center>
+            </p>
+        </li>
+
+        <br>
+        <li><b><code>Catmull-Rom</code></b>:
+            <p>The Catmull-Rom interpolation can be done according to formula: <center><IMG SRC="xzhan227_HTML/pics/cardinal .png" width=400></center>
+            </p>
+        </li>
+        <br>
+        <li><b><code>Uniform Cubic B-Splines</code></b>:
+            <p>The Uniform Cubic B-Splines interpolation can be done according to formula: <center><IMG SRC="xzhan227_HTML/pics/B-Splines.png" width=400></center>
+            </p>
+        </li>
+        <TABLE BORDER=1>
+            <TR>
+                <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/quaternion.mp4"></video></TD>
+                 <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/cat.mp4"></video></TD>
+                <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/Cubic.mp4"></video></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Rotation by Quaternion + Linear Sampling</TD>
+                    <TD ALIGN="CENTER"><CODE>Rotation by Quaternion + Uniform Catmull-Rom Sampling</TD><TD ALIGN="CENTER"><CODE>Rotation by Quaternion + Uniform Cubic B-Splines Sampling</TD></TR></TABLE>
+        <br>
+        <h3>Rotation</h3>
+        <li><b><code>EulerRotationParameter::operator()</code></b>:
+            <p>We can convert the Euler angle to rotation matrix by the following formula: <center><IMG SRC="xzhan227_HTML/pics/euler.png" width=400></center>
+            </p>
+                <TABLE BORDER=1>
+                    <TR>
+                    <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/euler.mp4"></video></TD>
+                    </TR>
+                    <TR>
+                        <TD ALIGN="CENTER"><CODE>Rotation by Euler Angels + Linear Sampling</TD></TR></TABLE>
+            <p>As we can see in the animation, although using Euler angles guarantees that the in-between transformations are rotations, they can result in unwanted artifacts such as jiggling of the runner's legs.</p>
+        </li> 
+        <br>
+        <li><b><code>QuaternionRotationParameter::operator()</code></b>:
+            <p>We can convert the quaternion to rotation matrix by the following formula: <center><IMG SRC="xzhan227_HTML/pics/quaternion.png" width=400></center> where the quaternion is defined as: <center><IMG SRC="xzhan227_HTML/pics/q.png" width=150></center>
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/quaternion.mp4"></video></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Rotation by Quaternion + Linear Sampling</TD></TR></TABLE>
+        </li>
+        <br>
+        <li><b><code>Matrix::closestRotation()</code></b>:
+            <p>
+                We can find the closest rotation matrix by using the SVD decomposition, and setting the diagonal matrix to identity matrix except the last element to be det(U * V).
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/rotation.mp4"></video></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Rotation by the closest rotation matrix + Linear Sampling</TD></TR></TABLE>
+        </li>
+        <br>
+        <li><b><code>Matrix::Exp()</code></b>:
+            <p> We used the taylor expansion to calculate the exponential of a matrix. The formula is shown below: <center><IMG SRC="xzhan227_HTML/pics/exp.png" width=400></center>
+            </p>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/exp.mp4"></video></TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER"><CODE>Rotation by Skew-Symmetric Matrices + Linear Sampling</TD></TR></TABLE>
+        </li>
+        
+        <br>
+
+        <li><b><code>Custom Animation</code></b>:
+            <p><code>Run <code>./Assignment4 --in xzhan227_HTML/rays/animation.ray --parameter 4 --interpolant 3</code>, to check out the animation I created.</p><br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/animation.mp4"></video></TD>
+                            </TR>
+                            </TABLE>
+        
+        </li>
+        <br>
+        <li><b><code>Art Conetest</code></b>:
+            <p><code>Run <code>./Assignment4 --in xzhan227_HTML/rays/art.ray --parameter 4 --interpolant 3</code>, to see the art contest.</p><br>
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><CODE><video width="350" controls autoplay loop><source src="xzhan227_HTML/pics/art2.mp4"></video></TD>
+                    
+                </TR>
+            </TABLE>
+
+            <TABLE BORDER=1>
+                <TR>
+                    <TD><IMG SRC="xzhan227_HTML/pics/art.png" width=200></IMG></TD>
+                                
+                </TR>
+                <TR>
+                    <TD>Picture</TD>
+                                                
+                 </TR>
+            </TABLE>
+        
+        </li>
+        
+</ul>
+    <hr>
+    <h3>Not Implemented:</h3>
+    <ul>
+        <li>Add the ability to parse a list of 3D control points from a file and generate a camera path spline that the viewpoint flies along.</li>
+        <li>Add the ability to composite two motions specified in separate .key files onto the same actor at the same time. Augment
+        the .key files to include a #Start time, and linearly blend between motions for the subsets of joints in both .key files
+        during transition periods. Demonstrate this feature with a hand waving motion composited onto a walking cycle.</li>
+        <li>Add the ability to transition and composite motions in separate .key files under interactive user control.</li>
+        <li>Modify the OpenGL renderer to allow the user to generate a sequence of video images by taking snapshots of the scene
+            from the same perspective as the RayCamera at a user-specified frame-rate.</li>
+        <li>Modify the OpenGL renderer to allow the user to generate a sequence of video images by ray-tracing a sequence of
+            scenes from the same perspective as the RayCamera at a user-specified frame-rate.</li>
+    </ul>
+
+</body>
+
+</html>

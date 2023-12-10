@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>EN.601.657 Computer Graphics (2023 Fall) Assignment 1</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <h3 align="center">EN.601.657 Computer Graphics (Fall 2023) Assignment 1</h3>
+    <h3 align="center">Xiaorui Ray Zhang (xzhan227@jh.edu)</h3>
+    <hr />
+    <h3>General Information</h3>
+    <ul>
+        <li><b>Name</b>: Xiaorui Zhang</li>
+        <li><b>JHED ID</b>: xzhan227</li>
+        <li><b>Environment</b>: Mac (M1) macOs Ventura 13.2.1</li>
+        <li><b>Number of late days used</b>: 0</li>
+    </ul>
+    <hr />
+    <h3>Modification outside <code>*.todo.cpp</code> files</h3>
+    <ul>
+        The only modification I made was overloadeding the  constructor of Pixel32 class so that a Pixel32 object can be initialized providing r g b values. <br>
+        <code>Pixel32::Pixel32(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}</code>.
+    </ul>
+
+    <hr />
+    <h3>2D Image Processing</h3>
+    <p>In this section, I will show the results of running my implementation of the following functions:</p>
+    <ul>
+        <li><b><code>Image32 Image32::addRandomNoise (double noise)</code></b>:
+            <p>This method outputs a new image image with random noise added
+                to each pixel. The value of the input
+                parameter should be
+                in the range [0,1] representing the fraction of noise that
+                should be added. The actual amount of noise
+                added is in the
+                range [-noise,noise].
+            </p>
+            <p>At each pixel, a noise in the range [-noise, noise] * 255 is
+                added to each channel. Since the resulting
+                value can go beyond the
+                range of 8-bit, a function 
+                <code> static int clampToRange(double x, int min = 0, int max = 255)</code>
+                is used to clamp the values back to the range.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.noisify.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.noisify.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.noisify.3.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.noisify.5.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.noisify.7.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.noisify.9.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>--noisify 0</td>
+                    <td align="center"><code>--noisify .1</td>
+                    <td align="center"><code>--noisify .3</td>
+                    <td align="center"><code>--noisify .5</td>
+                    <td align="center"><code>--noisify .7</td>
+                    <td align="center"><code>--noisify.9</td>
+                </tr>
+            </table>
+        </li>
+
+        <br>
+        <li><b><code>Image32 Image32::brighten (double brightness) const</code></b>:
+            <p>This method outputs a new image in which each pixel is brightened. 
+                The value of the input parameter is the scale by
+                which the image should be
+                brightened.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.brighten.3.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.brighten.5.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.brighten.7.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.brighten.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.brighten.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.brighten.4.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>--brighten.3</td>
+                    <td align="center"><code>--brighten.5</td>
+                    <td align="center"><code>--brighten.7</td>
+                    <td align="center"><code>--brighten 1</td>
+                    <td align="center"><code>--brighten 2</td>
+                    <td align="center"><code>--brighten 4</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::luminance (void) const</code></b>:
+            <p>This method outputs the gray-scale image, using the formula 
+                \(\bar{L} = 0.30 \cdot r_{p} + 0.59 \cdot g_{p} + 0.11 \cdot b_{p}\).
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.gray.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/sully.gray.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.gray.bmp" width=300></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>--gray</td>
+                    <td align="center"><code>--gray</td>
+                    <td align="center"><code>--gray</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::contrast (double contrast) const</code></b>:
+            <p>This method outputs a new image in which the contract has been changed. 
+               The value of the input parameter is the scale by which the contrast of 
+               the image should be changed. <br><br>
+               The <b>mean image</b> luminance (averaged over all pixel) is first computed:<br>
+               <center>\(\bar{L} = 0.30 \cdot r_{p} + 0.59 \cdot g_{p} + 0.11 \cdot b_{p}\)</center> <br>
+                Then the deviation from \(\bar{L}\) is scaled by the following formula: <br>
+                <center>\(p_{rgb} = (p_{rgb} - \bar{L}) \cdot \text{contrast} + \bar{L} \)</center> <br>
+                Finally the result is clamped to range [0, 255].
+             </p>
+            <table border=1>
+                <tr>
+
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.contrast.0.5.bmp"
+                            width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.contrast.0.7.bmp"
+                            width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.contrast.1.bmp"
+                            width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.contrast.2.bmp"
+                            width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.contrast.4.bmp"
+                            width=250></td>
+                </tr>
+
+                <tr>
+                    <td align="center"><code>--contrast .5</td>
+                    <td align="center"><code>--contrast .7</td>
+                    <td align="center"><code>--contrast 1</td>
+                    <td align="center"><code>--contrast 2</td>
+                    <td align="center"><code>--contrast 4</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::saturate (double saturation) const</code></b>:
+            <p>This method outputs a new image in which the saturation of each pixel has been changed.
+               The value of the input parameter is the scale by which the saturation of the pixel should be changed.
+               <br><br>
+                Contrary to the contrast, a <b>per pixel</b> luminance is first computed:<br>
+                <center>\(L_{p} = 0.30 \cdot r_{p} + 0.59 \cdot g_{p} + 0.11 \cdot b_{p}\)</center> <br>
+                Then the deviation from \(L_{p}\) is scaled and clamped similar to the contrast function.<br>
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.saturate.0.5.bmp" width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.saturate.0.7.bmp" width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.saturate.1.bmp" width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.saturate.2.bmp" width=250></td>
+                    <td><img src="xzhan227_HTML/OutputImages/shrek.saturate.4.bmp" width=250></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>--saturate .5</td>
+                    <td align="center"><code>--saturate .7</td>
+                    <td align="center"><code>--saturate 1</td>
+                    <td align="center"><code>--saturate 2</td>
+                    <td align="center"><code>--saturate 4</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::crop (int x1, int y1, int x2, int y2) const</code></b>:
+            <p>This method outputs a croppedimage. The values of the input parameters specify the corners of the cropping rectangle. 
+                I have made this function robust such that the order of the corners does not matter, as long as they define a valid rectangle.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/yoda.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.crop.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.crop.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.crop.3.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.crop.4.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>Original</td>
+                    <td align="center"><code>--crop 0 0 500 500</td>
+                    <td align="center"><code>--crop 0 500 500 0</td>
+                    <td align="center"><code>--crop 150 500 500 150</td>
+                    <td align="center"><code>--crop 500 150 150 500</td>
+                </tr>
+            </table>
+            <p>As you can see in the above images, defineing the cropping rectangle in different order will not affect the result.</p>
+            </p>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::quantize (int bits) const</code></b>:
+            <p>This method outputs a new image in which each pixel is represented by a fixed number of 
+                bits. The final pixel values are obtained by quantizing. 
+                The value of the input parameter is the number of bits that should be used to represent a color
+                component in the output image.
+                <br><br>
+                The first step is to transfer the intensity to the range of [0,1] by: 
+                <br>
+                <center>\(I_{[0,1)]} = \frac{I_{[0,255]}}{255} \)</center>
+                <br>
+                Then we use the formula in the slides \(I = \text{floor}(I \cdot 2^{b})\), to map all the pixel value into \([0, 1, ..., (2^{b} - 1)]\). <br>
+                Finally, we map back the pixel value to \([0,255]\) by: <br> <center>\(I_{[0,255]} = \frac{255}{2^{b}-1} \cdot I_{[0,...,2^{b}-1]} \)</center>
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/ramp.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.quantize.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.quantize.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.quantize.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.quantize.6.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>Original</td>
+                    <td align="center"><code>--quantize 1</td>
+                    <td align="center"><code>--quantize 2</td>
+                    <td align="center"><code>--quantize 4</td>
+                    <td align="center"><code>--quantize 6</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+
+        <li><b><code>Image32 Image32::randomDither (int bits) const</code></b>:
+            <p> This method outputs a new image in which each pixel is represented by a fixed number of bits. The final pixel values are
+                obtained by adding noise to the pixel color channels and then quantizing. The value of the input parameter is the number
+                of bits that should be used to represent a color component in the output image.
+                <br>
+                Based on the formula for Random Dither:
+                <br>
+                <center>\(I_{(x,y)} = Q_{b}~( I_{(x,y)} + \frac{noise(x,y)}{2^{b}} ) \)</center>
+                <br>
+                We can directly call <code>addRandomNoise()</code> and <code>quantize()</code> to do a random dither.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/ramp.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.rDither.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.rDither.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.rDither.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.rDither.6.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>Original</td>
+                    <td align="center"><code>--rDither 1</td>
+                    <td align="center"><code>--rDither 2</td>
+                    <td align="center"><code>--rDither 4</td>
+                    <td align="center"><code>--rDither 6</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::orderedDither2X2 (int bits) const</code></b>:
+            <p>
+                This method outputs a new image in which each pixel is represented by a fixed number of bits. The final pixel values are
+                obtained by using a 2x2 dithering matrix to determine how values should be quantized. The value of the input parameter
+                is the number of bits that should be used to represent a color component in the output image.
+                <br><br>
+                The formula for Ordered Dither from class is:
+                <center><img src="xzhan227_HTML/InputImages/orderedDither.png" width=400></center>
+                
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/ramp.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.oDither2x2.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.oDither2x2.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.oDither2x2.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.oDither2x2.6.bmp" width=200></td>
+                </tr>
+                <tr>
+                        <td align="center"><code>Original</td>
+                        <td align="center"><code>--oDither2x2 1</td>
+                        <td align="center"><code>--oDither2x2 2</td>
+                        <td align="center"><code>--oDither2x2 4</td>
+                        <td align="center"><code>--oDither2x2 6</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::floydSteinbergDither (int bits) const</code></b>:
+            <p>This method outputs a new image in which each pixel is represented by a fixed number of bits. The final pixel values are
+            obtained by using Floyd-Steinberg dithering for propogating quantization errors. The value of the input parameter is the
+            number of bits that should be used to represent a color component in the output image. <br>
+            <br>Using the psedo codes from the slides, we can implement the Floyd-Steinberg Dithering as following:
+            <center><img src="xzhan227_HTML/InputImages/FSDither.png" width=400></center>
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/ramp.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.fsDither.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.fsDither.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.fsDither.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/ramp.fsDither.6.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>Original</td>
+                    <td align="center"><code>--fsDither 1</td>
+                    <td align="center"><code>--fsDither 2</td>
+                    <td align="center"><code>--fsDither 4</td>
+                    <td align="center"><code>--fsDither 6</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::blur3X3 (void) const</code></b>:
+            <p>This method outputs a blur of the image using a 3x3 mask.
+                <br><br>
+                Essentially this is a 3x3 convolution with an averaging mask. Thus a function <code>static Image32 convolution(const Image32 &image, double matrix[3][3], int scale = 1)</code> is created to handle the convolution.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/sully.bmp" width=300></td>
+                    <td><img src="xzhan227_HTML/OutputImages/sully.blur.bmp" width=300></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>Original</td>
+                    <td align="center"><code>--blur3x3</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::edgeDetect3X3 (void) const</code></b>:
+            <p> This method outpus a new image highlighting the edges in the input using a 3x3 mask.<br><br>
+                Essentially, this is a 3x3 convolution with a edge detection (derivative) mask. Thus the same function <code>static Image32 convolution(const Image32 &image, double matrix[3][3], int scale = 1)</code> can be used. However, since after the covolution the what we got is the derivative of the image, we need to map the value back to [0,255], here I simply scaled the value by 10 and clamp it to [0,255] using the sclae parameter in <code>Image32 convolution(const Image32 &image, double matrix[3][3], int scale = 1)</code>.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/sully.bmp" width=300></td>
+                    <td><img src="xzhan227_HTML/OutputImages/sully.edge.bmp" width=300></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>Original</td>
+                    <td align="center"><code>--edges3x3</td>
+                </tr>
+             </table>
+        </li>
+        <br>
+        <li>
+            <b>All three sampling were implemented:</b>:
+            <ul>
+                <li><code>Pixel32 Image32::nearestSample (Util::Point2D p) const</code>:
+                <br>
+                This method returns the value of the image, sampled at position p using nearest-point sampling. Black pixel 
+                will be returned if the coordinates were out of range. 
+                </li>
+                <br>
+                <li><code>Pixel32 Image32::bilinearSample (Util::Point2D p) const</code>:
+                <br>
+                This method returns the value of the image, sampled at position p using bilinear-weighted sampling. Black pixel
+                will be returned if the coordinates were out of range.
+                </li>
+                <br>
+                <li><code>Pixel32 Image32::gaussianSample ( Util::Point2D p, double variance, double radius) const</code>:
+                <br>
+                This method returns the value of the image, sampled at position p using Gaussian-weighted sampling. The variance of the
+                Gaussian and the radius over which the weighted summation is performed are specified by the parameters.
+                </li>
+            </ul>
+        </li>
+        <br>
+        <li><b>All three scaling functions were implemented</b>:
+
+            <ul>
+                <li><code>Image32 Image32::scaleNearest (double scaleFactor) const</code>:
+                    <br>
+                    This method outputs a scaled image which is obtained using nearest-point sampling. The value of the input parameter is
+                    the factor by which the image is to be scaled.
+                </li>
+                <br>
+                <li><code>Image32 Image32::scaleBilinear (double scaleFactor) const</code>:
+                    <br>
+                    This method outputs a scaled image which is obtained using bilinear sampling. The value of the input parameter is the
+                    factor by which the image is to be scaled.
+                </li>
+                <br>
+                <li><code>Image32 Image32::scaleGaussian (double scaleFactor) const</code>:
+                    <br>
+                    This method outputs a scaled image which is obtained using Gaussian sampling. The value of the input parameter is the
+                    factor by which the image is to be scaled.
+                </li>
+            </ul>
+
+            <p> Using back mapping, for each pixel in the output image, we can find the corresponding pixel in the input image by dividing the scale factor.
+                Using the sampling functions above, we can get the pixel value at the corresponding position. For Gaussian sampling function, the standard 
+                deviation is calculated by 1 times the maximum distance between samples in the input and output. The radius is 3 times the standard deviation 
+                to cover 99.7% of the Gaussian distribution.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><b><center>--scaleNearest</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleN.0.7.bmp" width=140></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleN.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleN.1.3.bmp" width=260></td>
+                </tr>
+                <tr>
+                    <td><b><center>--scaleBilinear</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleB.0.7.bmp" width=140></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleB.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleB.1.3.bmp" width=260></td>
+                </tr>
+                <tr>
+                    <td><b><center>--scaleGaussian</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleG.0.7.bmp" width=140></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleG.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.scaleG.1.3.bmp" width=260></td>
+                </tr>
+                <tr>
+                    <td><b><center>Scale Factor</center></b></td>
+                    <td align="center"><code>.7</td>
+                    <td align="center"><code>1.0</td>
+                    <td align="center"><code>1.3</td>
+                </tr>
+            </table>
+        </li>
+
+        <br>
+        <li><b><code>All three rotating functions were implemented</code></b>:
+            <br><b>In the context below, positive angle means counter clock wise rotation.</b><br>
+            <ul>
+            <li><code>Image32 Image32::rotateNearest (double angle) const</code>:
+                <br>
+                This method outputs a rotated image which is obtained using nearest-point sampling. The value of the input parameter is
+                the angle of rotation (in degrees).
+            </li>
+            <br>
+            <li><code>Image32 Image32::rotateBilinear (double angle) const</code>:
+                <br>
+                This method outputs a rotated image which is obtained using bilinear sampling. The value of the input parameter is the
+                angle of rotation (in degrees).
+            </li>
+            <br>
+            <li><code>Image32 Image32::rotateGaussian (double angle) const</code>:
+                <br>
+                This method outputs a rotated image which is obtained using Gaussian sampling. The value of the input parameter is the
+                angle of rotation (in degrees).
+            </li>
+            </ul>
+            <p> Rotations are very similar to the scale, except we need to first calculate the rotated image sizes. Thus I created a function
+                <code>static void calculateRotatedImageSize(const Image32 &image, double angle, int &height, int &width)</code> to help with that. <br>
+                Then for each pixel we use back mapping to find the corresponding pixel before rotation. In this process I assumed the rotation is about the center 
+                pixel of the image. Thus, the transformation is:
+                <br>
+                <center>\(T = Trans(\bar{x}^{\prime}, \bar{y}^{\prime}) \cdot Rotation(-\theta) \cdot Trans(\bar{x}, \bar{y}\)</center>
+                <br>
+                where \( (\bar{x}^{\prime}, \bar{y}^{\prime}) \) is the center of the rotated new image, where \( (\bar{x}, \bar{y}) \) is the center of the original image.
+                <br>
+                There are four steps in this process:
+                <ul>
+                    <li>Move the center of the new image to the origin</li>
+                    <li>Rotate the new image w.r.t it's center (origin) by \(-\theta\)</li>
+                    <li>Translate the center back to align with the original image.</li>
+                    <li>Sampling</li>
+                </ul>
+                <br>
+                For gaussian sampling, I chose the standard deviation and the radius will be 0.75 and 0.75 * 3 respectively.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><b><center>Nearest Sampling</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateN.n90.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateN.n45.bmp" width=283></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateN.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateN.45.bmp" width=283></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateN.90.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td><b><center>Bilinear Sampling</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateB.n90.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateB.n45.bmp" width=283></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateB.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateB.45.bmp" width=283></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateB.90.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td><b><center>Gaussian Sampling</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateG.n90.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateG.n45.bmp" width=283></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateG.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateG.45.bmp" width=283></td>
+                    <td><img src="xzhan227_HTML/OutputImages/stripe.rotateG.90.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td><b><center>Rotation Angle (+ for c.c)</center></b></td>
+                    <td align="center"><code>-90</td>
+                    <td align="center"><code>-45</td>
+                    <td align="center"><code>0</td>
+                    <td align="center"><code>45</td>
+                    <td align="center"><code>90</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b><code>Image32 Image32::funFilter (void) const</code></b>:
+            <p>I implemented the swirl filter following the formula and steps found on <a href="https://scikit-image.org/docs/stable/auto_examples/transform/plot_swirl.html">scikit</a>.
+            </p>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/InputImages/yoda.bmp" width=300></td>
+                    <td><img src="xzhan227_HTML/OutputImages/yoda.swirl.bmp" width=300></td>
+                </tr>
+                <tr>
+                    <td align="center"><code>source image</td>
+                    <td align="center"><code>--fun</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+        <li><b>Beier-Neely Morphing</b>:
+            <p> Morph two images using the method in Beier Neely's Feature-based Image Metamorphosis.<br>
+                The Beier-Neely Morphing  ogther with all its helper functions have been successfully implemented. Moreover, 
+                to avoid black boarder when sampling outside the image, in the 
+                <code>Image32 Image32::warp(const OrientedLineSegmentPairs &olsp) const</code> function, 
+                I clamped the sampling such that instead of taking a black pixel "outside" of the image, I take closest pixel on the image boundary. <br>
+                Here are some examples of the morphing process with different transformation (note: all the results are sampled using nearest sampling):
+            </p>
+            <table border=1>
+                <tr>
+                    <td><b><center>Translation</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.3.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.5.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.6.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.7.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.8.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.9.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph1.10.bmp" width=200></td>
+                            
+                </tr>
+                <tr>
+                    <td><b><center>Translation Plus Scale</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.3.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.5.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.6.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.7.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.8.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.9.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph2.10.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td><b><center>Translation Plus Rotation</center></b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.3.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.5.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.6.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.7.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.8.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.9.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph3.10.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td><b>MultiLine </b></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.0.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.1.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.2.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.3.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.4.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.5.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.6.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.7.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.8.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.9.bmp" width=200></td>
+                    <td><img src="xzhan227_HTML/OutputImages/bnMorph4.10.bmp" width=200></td>
+                </tr>
+                <tr>
+                    <td><b>Time step</b></td>
+                    <td align="center"><code>0.0</td>
+                    <td align="center"><code>0.1 </td>
+                    <td align="center"><code>0.2</td>
+                    <td align="center"><code>0.3</td>
+                    <td align="center"><code>0.4</td>
+                    <td align="center"><code>0.5</td>
+                    <td align="center"><code>0.6</td>
+                    <td align="center"><code>0.7</td>
+                    <td align="center"><code>0.8</td>
+                    <td align="center"><code>0.9</td>
+                    <td align="center"><code>1.0</td>
+                </tr>
+            </table>
+        </li>
+        <br>
+    </ul>
+    <hr>
+    <h3>Art Contest</h3>
+    <ul>
+        <li><b>Image</b>
+        <table border=1>
+            <tr>
+                <td><img src="xzhan227_HTML/xzhan227.art.submission1.bmp" width=300></td>
+            </tr>
+        </table>
+    </ul>
+
+    <hr>
+    <h3>Gif</h3>
+    <ul>
+        <li><b>GIF</b>
+            <br>
+            <table border=1>
+                <tr>
+                    <td><img src="xzhan227_HTML/xzhan227.art.submission2.gif" width=300></td>
+                    <td><img src="xzhan227_HTML/xzhan227.art.submission3.gif" width=300></td>
+                </tr>
+            </table>
+    
+        </li>
+    </ul>
+  </body>
+</html>
