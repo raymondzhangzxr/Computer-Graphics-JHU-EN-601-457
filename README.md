@@ -7,6 +7,9 @@ This is a public repo for the course EN-601-457 Computer Graphics at Johns Hopki
 - **Institution**: Johns Hopkins University
 - **Instructor**: Prof. Misha Kazhdan
 
+## My implementation and guidelines: 
+[Project Implementations](https://raymondzhangzxr.github.io/Computer-Graphics-JHU-EN-601-457/)
+
 ## Repository Content
 This repository includes:
 
